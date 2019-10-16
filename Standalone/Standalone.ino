@@ -130,10 +130,6 @@ void setup(void) {
   server.on("/", handleRoot);
 
   server.on("/json", []() {
-    unsigned int len = line.length();
-    //Serial.print(line);
-    line.remove(len-1, 1) ; //remove the last comma
-    //Serial.print(line);
     server.send(200, "application/json", "["+line+"]");
   });
   server.onNotFound(handleNotFound);
@@ -153,7 +149,7 @@ SPIFFS.begin();
 } // end setup 
 
 long postPreviousMillis = 0;        // will store last time LED was updated
-long readInterval = 600000;           // interval at which to read sensors 1 seconds
+long readInterval = 10000;           // interval at which to read sensors 1 seconds
 int count = 0; // how many times has it ran, if its 96 rotate log
 
 void loop(void) {
@@ -243,6 +239,10 @@ Lw = light.get_lux();
     }
     
   m.close();
+
+  unsigned int len = line.length();
+  line.remove(len-1, 1) ; //remove the last comma
+  
     digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   } //  end time
   
