@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>ioTank</title>
+<link href="./s.css" rel="stylesheet" type="text/css">
+<script language="javascript" type="text/javascript" src="./jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="./jquery.flot.min.js"></script>
+<script type="text/javascript">
+
+$(function() {
+
+
+$("#error").hide();
+
+var live = true;
+var fahrenheit = true;
+
+//
+
+var data = [];
+var flot = {};
+//
+function getData() {
+$.get({
+url: "/json",
+type: "GET",
+dataType: "json",
+success:function(response_data_json) {
+data.unshift(response_data_json);
+data = data.slice(0, 51);
+}
+});
+
+
+
+var res1 = [];
+var v1 = [];
+for (var i = 0; i < data.length; ++i) {
+if (fahrenheit == true) {
+t1n = parseFloat(data[i].t1)* 9 / 5 + 32;
+res1.push([i, t1n]);
+v1.push(t1n);
+}//if
+else{
+res1.push([i, parseFloat(data[i].t1)]);
+v1.push(parseFloat(data[i].t1));
+}//el
+}//ef
+
+var res2 = [];
+var v2 = [];
+for (var i = 0; i < data.length; ++i) {
+if (fahrenheit == true) {
+t2n = parseFloat(data[i].t2)* 9 / 5 + 32;
+res2.push([i, t2n]);
+v2.push(t2n);
+}//if
+else{
+res2.push([i, parseFloat(data[i].t2)]);
+v2.push(parseFloat(data[i].t2));
+}//el
+}//ef
+
+
+var res3 = [];
+var v3 = [];
+for (var i = 0; i < data.length; ++i) {
+res3.push([i, data[i].h])
+v3.push(parseInt(data[i].h));
+}
+
+var res4 = [];
+var v4 = [];
+for (var i = 0; i < data.length; ++i) {
+res4.push([i, data[i].uv])
+v4.push(parseFloat(data[i].uv));
+}
+
+var res5 = [];
+var v5 = [];
+for (var i = 0; i < data.length; ++i) {
+res5.push([i, data[i].l])
+v5.push(parseFloat(data[i].l));
+}
+
+flot = {t1:res1, t2:res2, h:res3, uv:res4, l:res5};
+
+
+$('#t1_max').text(Math.max.apply( Math,v1));
+$('#t1_min').text(Math.min.apply( Math,v1));
+
+$('#t2_max').text(Math.max.apply( Math,v2));
+$('#t2_min').text(Math.min.apply( Math,v2));
+
+$('#h_max').text(Math.max.apply( Math,v3));
+$('#h_min').text(Math.min.apply( Math,v3));
+
+$('#uv_max').text(Math.max.apply( Math,v4));
+$('#uv_min').text(Math.min.apply( Math,v4));
+
+$('#l_max').text(Math.max.apply( Math,v5));
+$('#l_min').text(Math.min.apply( Math,v5));
+
+$('#vi').text("Live");
+
+
+return flot;
+}
+//
+function get24() {
+hdata = [];
+
+
+$.get({
+url: "/h"+ hour,
+type: "GET",
+dataType: "text",
+success:function(response) {
+
+var array = response.split('\n');
+
+$.each( array, function( index, value ){
+
+if( value ) {
+hdata.push(JSON.parse(value))
+
+} //if
+
+}); // each
+
+var res1 = [];
+var v1 = [];
+for (var i = 0; i < hdata.length; ++i) {
+if (fahrenheit == true) {
+t1n = parseFloat(hdata[i].t1)* 9 / 5 + 32;
+res1.push([i, t1n]);
+v1.push(t1n);
+}//if
+else{
+res1.push([i, parseFloat(hdata[i].t1)]);
+v1.push(parseFloat(hdata[i].t1));
+}//el
+}//ef
+
+var res2 = [];
+var v2 = [];
+for (var i = 0; i < hdata.length; ++i) {
+if (fahrenheit == true) {
+t2n = parseFloat(hdata[i].t2)* 9 / 5 + 32;
+res2.push([i, t2n]);
+v2.push(t2n);
+}//if
+else{
+res2.push([i, parseFloat(hdata[i].t2)]);
+v2.push(parseFloat(hdata[i].t2));
+}//el
+}//ef
+var res3 = [];
+var v3 = [];
+for (var i = 0; i < hdata.length; ++i) {
+res3.push([i, hdata[i].h])
+v3.push(parseInt(hdata[i].h));
+}
+
+var res4 = [];
+var v4 = [];
+for (var i = 0; i < hdata.length; ++i) {
+res4.push([i, hdata[i].uv])
+v4.push(parseFloat(hdata[i].uv));
+}
+
+var res5 = [];
+var v5 = [];
+for (var i = 0; i < hdata.length; ++i) {
+res5.push([i, hdata[i].l])
+v5.push(parseFloat(hdata[i].l));
+}
+
+flot = {t1:res1, t2:res2, h:res3, uv:res4, l:res5};
+$('#t1_max').text(Math.max.apply( Math,v1));
+$('#t1_min').text(Math.min.apply( Math,v1));
+
+$('#t2_max').text(Math.max.apply( Math,v2));
+$('#t2_min').text(Math.min.apply( Math,v2));
+
+$('#h_max').text(Math.max.apply( Math,v3));
+$('#h_min').text(Math.min.apply( Math,v3));
+
+$('#uv_max').text(Math.max.apply( Math,v4));
+$('#uv_min').text(Math.min.apply( Math,v4));
+
+$('#l_max').text(Math.max.apply( Math,v5));
+$('#l_min').text(Math.min.apply( Math,v5));
+
+
+if(hour == '24') {
+$('#vi').text("Today");
+}
+
+if(hour == '48') {
+$('#vi').text("24 hours ago");
+}
+
+if(hour == '72') {
+$('#vi').text("48 hours ago");
+}
+
+} // success
+
+}); // ajax
+
+return flot;
+
+}
+
+
+$("#24hbtn").click(function(){
+hour = "24";
+live = false;
+
+}); 
+
+$("#48hbtn").click(function(){
+hour = "48";
+live = false;
+
+}); 
+
+$("#72hbtn").click(function(){
+hour = "72";
+live = false;
+
+}); 
+$("#fc").click(function(){
+fahrenheit = !fahrenheit;
+}); 
+fahrenheit
+
+$("#live").click(function(){
+location.reload();
+}); 
+
+isPaused = false;
+$("#ppw").hide();
+$("#pp").click(function(){
+isPaused = !isPaused;
+$("#ppw").show();
+if(isPaused == false) {
+update();
+$("#ppw").hide();
+}
+
+}); 
+
+
+function update() {
+
+if(live == true) {
+stats = getData();
+
+}
+else{
+
+stats = get24();
+}
+
+var plot1 = $.plot("#p1", [{ data:stats.t1, label:"Temp 1 ", lines: { show: true, fill: false, fillColor: "#FF0" }, points:{show:false}, color:'#EF562D'}, { data:stats.t2, label:"Temp 2", lines: { show: true, fill: false, fillColor: "#FF0"}, points:{show:false}, color:'#F6D258'}, { data:stats.h, label:"Humidity", lines: { show: true, fill: false, fillColor: "#FF0"}, points:{show:false}, color:'rgb(100, 181, 246)'}], {
+series: {
+shadowSize: 0
+},
+
+});
+
+var plot2 = $.plot("#p2", [{ data:stats.uv, label:"UV ", lines: { show: true, fill: false, fillColor: "#FF0" }, points:{show:false}, color:'#673ab7'}], {
+series: {
+shadowSize: 0
+},
+
+});
+
+var plot3 = $.plot("#p3", [{ data:stats.l, label:"Lux ", lines: { show: true, fill: false, fillColor: "#FF0" }, points:{show:false}, color:'#90a4ae'}], {
+series: {
+shadowSize: 0
+},
+
+});
+
+
+if(!isPaused) {
+
+if(live == true) {
+setTimeout(update, 250);
+
+}
+else{
+setTimeout(update, 2500);
+}
+
+}
+}
+
+
+update();
+});
+
+$.ajaxSetup({
+beforeSend:function(){
+// show gif here, eg:
+$("#loading").show();
+},
+complete:function(){
+// hide gif here, eg:
+$("#loading").hide();
+}
+});
+
+$( document ).ajaxError(function( event, request, settings ) {
+$("#error").show();
+});
+$( document ).ajaxSuccess(function( event, request, settings ) {
+$("#error").hide();
+});
+</script>
+</head>
+<body>
+<img src="./header.png">
+
+
+<div class="c1">
+<h1 id="vi"></h1>
+<table class='v'>
+<tr>
+<th>Stats</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+<tr>
+<td>Temp1 (waterproof probe)</td>
+<td><span id="t1_min"></span>°</td>
+<td><span id="t1_max"></span>°</td>
+</tr>
+<tr>
+<td>Temp2 (internal temp)</td>
+<td><span id="t2_min"></span>°</td>
+<td><span id="t2_max"></span>°</td>
+</tr>
+<tr>
+<td>Humidity</td>
+<td><span id="h_min"></span>%</td>
+<td><span id="h_max"></span>%</td>
+</tr>
+<tr>
+<td>UV Index</td>
+<td><span id="uv_min"></span></td>
+<td><span id="uv_max"></span></td>
+</tr>
+<tr>
+<td>Lux</td>
+<td><span id="l_min"></span></td>
+<td><span id="l_max"></span></td>
+</tr>
+</table>
+
+<div>
+<input type="button" id="24hbtn" class="button" value="Today"/>
+<input type="button" id="48hbtn" class="button" value="24 Hours"/>
+<input type="button" id="72hbtn" class="button" value="48 Hours"/>
+<input type="button" id="live" class="button" value="Live"/>
+<input type="button" id="pp" class="button" value="Play/Pause"/>
+<input type="button" id="fc" class="button" value="F/C"/>
+
+<span id="loading">Loading.</span>
+<span id="ppw">Paused.</span>
+
+<span style="color:red" id="error">Communication Error.</span>
+</div>
+</div>
+
+<div class="c2">
+<div id="p1" class="p" style="padding: 0px; position: relative;"></div>
+</div>
+
+<div class="c2">
+<div id="p2" class="p" style="padding: 0px; position: relative;"></div>
+</div>
+
+<div class="c2">
+<div id="p3" class="p" style="padding: 0px; position: relative;"></div>
+</div>
+
+</body></html>

@@ -1,0 +1,108 @@
+*Pick And Place List
+*Company=
+*Author=
+*eMail=
+*
+*Project=ioTank UVB JFK edition_PCB1_106930
+*Date=12:35:28
+*CreatedBy=Fritzing 0.9.2b.11.19.8d2d5970658f0bed09c661c9ea9a515b5f40f44c
+*
+*
+*Coordinates in mm, always center of component
+*Origin 0/0=Lower left corner of PCB
+*Rotation in degree (0-360, math. pos.)
+*
+*No;Value;Package;X;Y;Rotation;Side;Name
+1;;;27.9727;-19.5574;0;Bottom;D7
+2;;;10.795;-20.8713;0;Bottom;Copper Fill25
+3;;;6.38267;-62.7373;0;Bottom;SCL
+4;;;5.11267;-17.0174;0;Bottom;3v3
+5;;;27.9727;-64.0073;0;Bottom;A0
+6;;;15.2273;-51.7703;0;Bottom;Copper Fill35
+7;;;10.795;-20.8713;0;Bottom;Copper Fill39
+8;;;2.288;-39.5629;90;Bottom;TXT1
+9;;;27.9727;-66.5473;0;Bottom;GND
+10;;;27.9727;-71.6273;0;Bottom;Vin
+11;;;23.836;-66.5545;90;Bottom;PCB2
+12;;;2.6651;-17.028;0;Bottom;Hole2
+13;;;28.7274;-27.2212;0;Bottom;Copper Fill28
+14;;;17.8828;-72.0722;0;Bottom;TXT2
+15;;;14.351;-52.6212;0;Bottom;Copper Fill19
+16;;;6.38267;-57.6573;0;Bottom;3v3
+17;;;27.9727;-14.4774;0;Bottom;Via12
+18;;;27.1018;-27.2212;0;Bottom;Copper Fill27
+19;;;9.47423;-8.17131;0;Bottom;Copper Fill36
+20;;;7.13743;-60.2412;0;Bottom;Copper Fill26
+21;;;6.38267;-60.1973;0;Bottom;GND
+22;;;5.11267;-32.2573;0;Bottom;Via28
+23;;;28.7274;-9.44131;0;Bottom;Copper Fill24
+24;;;2.07945;-24.4096;90;Bottom;IMG3
+25;;;10.795;-8.17131;0;Bottom;Copper Fill37
+26;;;5.11267;-14.4774;0;Bottom;Via20
+27;;;4.24183;-19.6013;0;Bottom;Copper Fill16
+28;;;5.11267;-6.85737;0;Bottom;5+
+29;;;28.7274;-66.5912;0;Bottom;Copper Fill23
+30;;;5.11267;-37.3373;0;Bottom;Via30
+31;;;26.3144;-48.8112;0;Bottom;Copper Fill31
+32;;;8.91505;-60.6422;-90;Bottom;TXT4
+33;;;27.9727;-69.0873;0;Bottom;3v3
+34;;;27.9727;-9.39737;0;Bottom;Via15
+35;;;27.9727;-27.1773;0;Bottom;Gnd
+36;;;27.9727;-22.0973;0;Bottom;D6
+37;;;27.9727;-24.6373;0;Bottom;D5
+38;;;5.11267;-27.1773;0;Bottom;Via26
+39;;;16.9926;-37.1653;0;Bottom;Copper Fill7
+40;;;19.9644;-40.2641;0;Bottom;Copper Fill29
+41;;;5.86743;-9.44131;0;Bottom;Copper Fill33
+42;;;30.6832;-31.1201;0;Bottom;Copper Fill2
+43;;;5.11267;-42.4173;0;Bottom;A0
+44;;;4.24183;-9.44131;0;Bottom;Copper Fill32
+45;;;5.11267;-29.7173;0;Bottom;Via27
+46;;;27.1018;-66.5912;0;Bottom;Copper Fill22
+47;;;12.7327;-57.6573;0;Bottom;Via36
+48;;;22.8927;-62.7373;0;Bottom;Via35
+49;;;27.9727;-29.7173;0;Bottom;3v3
+50;;;27.9727;-17.0174;0;Bottom;D8
+51;;;15.5194;-34.8031;0;Bottom;Copper Fill30
+52;;;16.5812;-24.0815;0;Bottom;ioTank
+53;;;17.8622;-50.5198;0;Bottom;TXT6
+54;;;31.4018;-33.803;90;Bottom;TXT5
+55;;;27.9727;-42.4173;0;Bottom;Via1
+56;10k;THT;20.1349;-38.3894;-45;Bottom;10k
+57;;;5.11267;-11.9374;0;Bottom;Via19
+58;;;28.7274;-66.5912;0;Bottom;Copper Fill38
+59;;;2.57267;-52.5773;0;Bottom;Via45
+60;;;11.0657;-61.5448;180;Bottom;PCB2
+61;;;5.11267;-39.8773;0;Bottom;Via31
+62;;;27.9727;-37.3373;0;Bottom;D2
+63;;;25.3873;-47.8841;0;Bottom;Copper Fill13
+64;;;15.2273;-51.7703;0;Bottom;Copper Fill18
+65;;;31.4332;-21.02;90;Bottom;IMG2
+66;;;5.11267;-22.0973;0;Bottom;Via23
+67;;;27.9727;-32.2573;0;Bottom;D4
+68;;DIP (Dual Inline) [THT];14.0028;-17.0173;0;Bottom;MCP3008
+69;;;25.7813;-66.9035;-90;Bottom;TXT3
+70;;THT;11.4628;-52.5773;180;Bottom;T1
+71;;;27.9727;-11.9374;0;Bottom;Via13
+72;;;22.1937;-13.4521;0;Bottom;IMG5
+73;;;25.3873;-49.7637;0;Bottom;Copper Fill12
+74;;;16.0782;-52.6212;0;Bottom;Copper Fill20
+75;;;27.9727;-61.4673;0;Bottom;En
+76;;;4.24183;-9.44131;0;Bottom;Copper Fill15
+77;;;15.2273;-53.4975;0;Bottom;Copper Fill17
+78;;;5.11267;-9.39737;0;Bottom;Gnd
+79;;;27.9727;-34.7973;0;Bottom;D3
+80;;;26.3144;-48.8112;0;Bottom;Copper Fill14
+81;;;27.9727;-6.85737;0;Bottom;Via16
+82;10k;THT;13.7849;-37.1194;-45;Bottom;10k
+83;;;5.11267;-34.7973;0;Bottom;Via29
+84;;;27.9727;-39.8773;0;Bottom;D1
+85;;;31.4246;-10.1815;90;Bottom;IMG1
+86;;;5.11267;-19.5574;0;Bottom;Gnd
+87;;;22.2614;-5.91357;0;Bottom;IMG4
+88;;;21.6434;-47.4973;-90;Bottom;DHT11
+89;;;10.1473;-7.52361;0;Bottom;Copper Fill21
+90;;;5.11267;-24.6373;0;Bottom;Via25
+91;;;31.3468;-57.2836;0;Bottom;Hole1
+92;;;4.24183;-19.6013;0;Bottom;Copper Fill34
+93;;;6.38267;-65.2773;0;Bottom;SDA

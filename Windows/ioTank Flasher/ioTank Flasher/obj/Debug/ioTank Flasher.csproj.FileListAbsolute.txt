@@ -1,0 +1,8 @@
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\bin\Debug\ioTank Flasher.exe.config
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\bin\Debug\ioTank Flasher.exe
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\bin\Debug\ioTank Flasher.pdb
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\obj\Debug\ioTank Flasher.csprojResolveAssemblyReference.cache
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\obj\Debug\ioTank_Flasher.MainForm.resources
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\obj\Debug\ioTank Flasher.csproj.GenerateResource.Cache
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\obj\Debug\ioTank Flasher.exe
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioTank Flasher\ioTank Flasher\obj\Debug\ioTank Flasher.pdb

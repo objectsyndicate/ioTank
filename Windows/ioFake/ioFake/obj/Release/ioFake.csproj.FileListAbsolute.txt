@@ -1,0 +1,6 @@
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioFake\ioFake\bin\Release\ioTank Emulator.exe.config
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioFake\ioFake\bin\Release\ioTank Emulator.exe
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioFake\ioFake\obj\Release\ioFake.csprojResolveAssemblyReference.cache
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioFake\ioFake\obj\Release\ioFake.MainForm.resources
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioFake\ioFake\obj\Release\ioFake.csproj.GenerateResource.Cache
+C:\Users\d3cline\Documents\SharpDevelop Projects\ioFake\ioFake\obj\Release\ioTank Emulator.exe
