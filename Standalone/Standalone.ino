@@ -136,10 +136,7 @@ void setup(void) {
     //Serial.print(line);
     server.send(200, "application/json", "["+line+"]");
   });
-
-
   server.onNotFound(handleNotFound);
-
   server.begin();
   Serial.println("HTTP server started");
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
@@ -152,20 +149,18 @@ SPIFFS.begin();
   light.begin(); // enable lux sensor
 
   timeClient.begin();
+  digitalWrite(LED_BUILTIN, HIGH);
 } // end setup 
 
-
-
 long postPreviousMillis = 0;        // will store last time LED was updated
-long readInterval = 3000;           // interval at which to read sensors 1 seconds
+long readInterval = 600000;           // interval at which to read sensors 1 seconds
 int count = 0; // how many times has it ran, if its 96 rotate log
 
 void loop(void) {
 
 unsigned long currentMillis = millis(); // NOW
 
-
- // Every 10 seconds read
+ // Every X read
   if(currentMillis - postPreviousMillis > readInterval) {
     postPreviousMillis = currentMillis;
   digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
@@ -213,25 +208,9 @@ float uvIntensity = mapfloat(uviVoltage, 0.96, 2.8, 0.0, 15.0); //Convert the vo
 //Serial.println(WiFi.localIP());
 // DHT 11 on and read
 
-/*
-dht DHT;
-int chk = DHT.read11(DHT11_PIN);
-H = DHT.humidity, 1;
-T2 = DHT.temperature, 1;
-// Set global vars
-*/
 T1w = steinhart;
  Serial.print("Temp 1 (C):    ");
  Serial.println(T1w);
-
-/*
-T2w = T2;
-// Serial.print("Temp 2 (C):    ");
-// Serial.println(T2w);
-Hw = H;
-// Serial.print("Humidity:    ");
-// Serial.println(Hw);
-*/
 
 UVw = uvIntensity;
  Serial.print("UV Index:    ");
@@ -255,18 +234,17 @@ Lw = light.get_lux();
   line = m.readString();
   Serial.println(count);
   
-  if (count>144){ // if history goes over 1mb, nuke it
+  if (count>1440){ // if history goes over 1mb, nuke it
     
   File m24 = SPIFFS.open("/h24", "w+");
   count=0;
   delay(1);
   
     }
+    
   m.close();
-  
     digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
-
-  }
+  } //  end time
   
   server.handleClient();
   MDNS.update();
