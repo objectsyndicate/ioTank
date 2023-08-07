@@ -84,8 +84,7 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 void handleRoot() {
   digitalWrite(led, 1);
 
-
-  String htmlData = R"raw(
+String htmlData = R"raw(
 <!DOCTYPE html>
 <html lang='en'>
 <head>
@@ -131,7 +130,7 @@ void handleRoot() {
         let minTime = Math.min(...data.map(item => item.utc));
         let maxTime = Math.max(...data.map(item => item.utc));
 
-        const timePadding = 0.05 * (maxTime - minTime); // 5% padding
+        const timePadding = 0.05 * (maxTime - minTime); // 5% padding for both left and right
         minTime -= timePadding;
         maxTime += timePadding;
 
@@ -163,7 +162,7 @@ void handleRoot() {
             
             ctx.strokeStyle = colors[metric];
             data.forEach((point, index) => {
-                let x = (point.utc - minTime) * xScale;
+                let x = padding + (point.utc - minTime) * xScale; // Added padding for x-axis
                 let y = canvasHeight - (point[metric] - minVal) * yScale - padding;
 
                 ctx.fillStyle = colors[metric];
@@ -191,7 +190,6 @@ void handleRoot() {
 </body>
 </html>
 )raw";
-
 
 
 
