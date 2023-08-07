@@ -100,23 +100,23 @@ String htmlData = R"raw(
 <div id='container'>
     <div>
         <label>t1:</label> <span id='t1Key'></span>
-        <canvas id='t1Canvas' width='800' height='200'></canvas>
+        <canvas id='t1Canvas' width='800' height='220'></canvas>
     </div>
     <div>
         <label>t2:</label> <span id='t2Key'></span>
-        <canvas id='t2Canvas' width='800' height='200'></canvas>
+        <canvas id='t2Canvas' width='800' height='220'></canvas>
     </div>
     <div>
         <label>h:</label> <span id='hKey'></span>
-        <canvas id='hCanvas' width='800' height='200'></canvas>
+        <canvas id='hCanvas' width='800' height='220'></canvas>
     </div>
     <div>
         <label>uv:</label> <span id='uvKey'></span>
-        <canvas id='uvCanvas' width='800' height='200'></canvas>
+        <canvas id='uvCanvas' width='800' height='220'></canvas>
     </div>
     <div>
         <label>l:</label> <span id='lKey'></span>
-        <canvas id='lCanvas' width='800' height='200'></canvas>
+        <canvas id='lCanvas' width='800' height='220'></canvas>
     </div>
 </div>
 <script>
@@ -124,43 +124,53 @@ String htmlData = R"raw(
     .then(response => response.json())
     .then(data => {
         const canvasWidth = 800;
-        const canvasHeight = 200;
+        const canvasHeight = 220;
+        const padding = 20;
         let minTime = Math.min(...data.map(item => item.utc));
         let maxTime = Math.max(...data.map(item => item.utc));
         let xScale = canvasWidth / (maxTime - minTime);
-        
-        const drawGrid = (ctx, maxVal, minVal, yScale) => {
-            ctx.strokeStyle = '#e0e0e0';
-            let step = (maxVal - minVal) / 5; // Divide graph into 5 sections
-            for (let i = 1; i < 5; i++) {
-                let y = canvasHeight - step * i * yScale;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvasWidth, y);
-                ctx.stroke();
-                ctx.font = '12px Arial';
-                ctx.fillStyle = 'gray';
-                ctx.fillText((step * i + minVal).toFixed(2), 0, y - 2);
-            }
-        }
+
+        const adjustForConstantValues = (min, max) => {
+            const offset = 0.1 * (max - min || 1);
+            return [min - offset, max + offset];
+        };
 
         ['t1', 't2', 'h', 'uv', 'l'].forEach(metric => {
             let maxVal = Math.max(...data.map(item => item[metric] || 0));
             let minVal = Math.min(...data.map(item => item[metric] || 0));
-            let yScale = canvasHeight / (maxVal - minVal);
-            document.getElementById(metric + 'Key').textContent = 'Min: ' + minVal + ', Max: ' + maxVal;
+            
+            [minVal, maxVal] = adjustForConstantValues(minVal, maxVal);
+            
+            let yScale = (canvasHeight - 2 * padding) / (maxVal - minVal);
+            document.getElementById(metric + 'Key').textContent = 'Min: ' + minVal.toFixed(2) + ', Max: ' + maxVal.toFixed(2);
             let canvas = document.getElementById(metric + 'Canvas');
             let ctx = canvas.getContext('2d');
             
-            drawGrid(ctx, maxVal, minVal, yScale);  // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            for (let i = 0; i <= 10; i++) {
+                let y = padding + i * (canvasHeight - 2 * padding) / 10;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvasWidth, y);
+                ctx.stroke();
+            }
 
             ctx.beginPath();
             ctx.strokeStyle = 'black';
             data.forEach((point, index) => {
                 let x = (point.utc - minTime) * xScale;
-                let y = canvasHeight - (point[metric] || minVal) * yScale;
+                let y = canvasHeight - (point[metric] - minVal) * yScale - padding;
                 if(index === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
+
+                ctx.fillStyle = 'red';
+                ctx.fillRect(x-2, y-2, 4, 4);
+                
+                if (index % 5 == 0 || index == data.length - 1) {
+                    ctx.font = '10px Arial';
+                    ctx.fillStyle = 'blue';
+                    ctx.fillText(new Date(point.utc * 1000).toISOString().substr(11, 5), x - 10, canvasHeight - 5);
+                }
             });
             ctx.stroke();
         });
@@ -170,6 +180,7 @@ String htmlData = R"raw(
 </body>
 </html>
 )raw";
+
 
 
   server.send(200, "text/html", htmlData);
