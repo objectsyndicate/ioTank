@@ -127,15 +127,9 @@ String htmlData = R"raw(
         const canvasWidth = document.body.clientWidth;
         const canvasHeight = 440;
         const padding = 20;
-        let minTime = Math.min(...data.map(item => item.utc));
-        let maxTime = Math.max(...data.map(item => item.utc));
 
-        const timePadding = 0.05 * (maxTime - minTime); // 5% padding for both left and right
-        minTime -= timePadding;
-        maxTime += timePadding;
-
-        let xScale = canvasWidth / (maxTime - minTime);
-
+        const xSlotWidth = canvasWidth / (data.length + 1); // The width of each slot
+        
         const adjustForConstantValues = (min, max) => {
             const offset = 0.1 * (max - min || 1);
             return [min - offset, max + offset];
@@ -162,13 +156,12 @@ String htmlData = R"raw(
             
             ctx.strokeStyle = colors[metric];
             data.forEach((point, index) => {
-                let x = padding + (point.utc - minTime) * xScale; // Added padding for x-axis
+                let x = xSlotWidth * (index + 1); // Start from the first slot
                 let y = canvasHeight - (point[metric] - minVal) * yScale - padding;
 
                 ctx.fillStyle = colors[metric];
                 ctx.fillRect(x-2, y-2, 4, 4);
 
-                // Display bold text value for each point
                 ctx.font = 'bold 12px Arial';
                 ctx.fillStyle = 'black';
                 ctx.fillText(point[metric].toFixed(2), x + 5, y - 5);
@@ -184,14 +177,9 @@ String htmlData = R"raw(
             });
             ctx.stroke();
         });
-    })
-    .catch(err => console.error(err));
+    });
 </script>
-</body>
-</html>
 )raw";
-
-
 
   server.send(200, "text/html", htmlData);
   digitalWrite(led, 0);
