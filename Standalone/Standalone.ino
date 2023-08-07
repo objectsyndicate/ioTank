@@ -6,16 +6,17 @@
 #include <ESP8266mDNS.h>
 #include <FS.h> // SPIFS
 // Stuff--------------------------------------
-//#include <dht.h> // DHT11
+#include "DHTesp.h"
 #include <Wire.h> //SPI
-#include <MAX44009.h> // Lux
+#include "Max44009.h" // Lux
 #include <MCP3008.h>
-MAX44009 light;
+Max44009 myLux(0x4A);
 #define CS_PIN D8
 #define CLOCK_PIN D5
 #define MOSI_PIN D7
 #define MISO_PIN D6
 MCP3008 adc(CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
+DHTesp dht;
 
 String T1w;
 String T2w;
@@ -62,8 +63,8 @@ String FC = "";
 String S = "";
 // WIFI --------------------------------------------
 #ifndef STASSID
-#define STASSID "......"
-#define STAPSK  "......"
+#define STASSID "meatwad"
+#define STAPSK  "f00manchu"
 #endif
 
 const char* ssid = STASSID;
@@ -82,7 +83,7 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 
 void handleRoot() {
   digitalWrite(led, 1);
-  String home = "<!DOCTYPE html> <html lang='en'> <head> <meta charset='utf-8'> <meta http-equiv='X-UA-Compatible' content='IE=edge'> <title>ioTank</title> <meta name='viewport' content='width=device-width, initial-scale=1'> <link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.css'> <style> #chart1 { height: 300px; width: 100%; stroke: #000; } #chart1 .ct-point{ stroke: FireBrick; } #chart1 .ct-line{ stroke: FireBrick ; } #chart2 { height: 300px; width: 100%; stroke: #000; } #chart2 .ct-point{ stroke: DarkBlue; } #chart2 .ct-line{ stroke: DarkBlue; } #chart3 { height: 300px; width: 100%; stroke: #000; } #chart3 .ct-point{ stroke: Indigo; } #chart3 .ct-line{ stroke: Indigo; } </style> </head> <body> <h2>Temp Probe</h2> <div class='t-chart' id='chart1'></div> <h2>Lux</h2> <div class='l-chart' id='chart2'></div> <h2>UV</h2> <div class='uv-chart' id='chart3'></div> <script src='https://code.jquery.com/jquery-3.4.1.min.js' integrity='sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=' crossorigin='anonymous'></script> <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.js'></script> <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script> <script> var time = []; var lux = []; var uv = []; $.ajax({ method: 'GET', url: '/json', processData: false, dataType: 'json', contentType: 'application/json', success: function(response) { response.forEach(responseFunction); function responseFunction(item, index) { time.push({x: new Date(item['utc']*1000), y: item['t1']}); lux.push({x: new Date(item['utc']*1000), y: item['l']}); uv.push({x: new Date(item['utc']*1000), y: item['uv']}); }; var chart = new Chartist.Line('.t-chart', { series: [ { name: 'Time', data: time }] }, { axisX: { type: Chartist.FixedScaleAxis, divisor: 5, labelInterpolationFnc: function(value) { return moment(value).format('MMM D'); } } }); var chart2 = new Chartist.Line('.l-chart', { series: [{ name: 'Lux', data: lux }] }, { axisX: { type: Chartist.FixedScaleAxis, divisor: 5, labelInterpolationFnc: function(value) { return moment(value).format('MMM D'); } } }); var chart3 = new Chartist.Line('.uv-chart', { series: [{ name: 'UV', data: uv }] }, { axisX: { type: Chartist.FixedScaleAxis, divisor: 5, labelInterpolationFnc: function(value) { return moment(value).format('MMM D'); } } }); } }); </script> </body> </html> ";
+  String home = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><title>ioTank</title><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.css\"><style>#chart1{height:300px;width:100%;stroke:#000;background-color:#FFD5D5}#chart1 .ct-point{stroke:#b22222}#chart1 .ct-line{stroke:#b22222}#chart2{height:300px;width:100%;stroke:#000;background-color:#DEF}#chart2 .ct-point{stroke:#00008b}#chart2 .ct-line{stroke:#00008b}#chart3{height:300px;width:100%;stroke:#000;background-color:#E0DDFF}#chart3 .ct-point{stroke:Indigo}#chart3 .ct-line{stroke:Indigo}#chart4{height:300px;width:100%;stroke:#000;background-color:#DFD}#chart4 .ct-point{stroke:#006400}#chart4 .ct-line{stroke:#006400}#chart5{height:300px;width:100%;stroke:#000;background-color:#FFF4E0}#chart5 .ct-point{stroke:#d2691e}#chart5 .ct-line{stroke:#d2691e}</style></head><body><h2>Temp Probe</h2><div class=\"t-chart\" id=\"chart1\"></div><h2>Lux</h2><div class=\"l-chart\" id=\"chart2\"></div><h2>UV</h2><div class=\"uv-chart\" id=\"chart3\"></div><h2>Temp Sensor</h2><div class=\"t2-chart\" id=\"chart4\"></div><h2>Humidity</h2><div class=\"h-chart\" id=\"chart5\"></div><script src=\"https://code.jquery.com/jquery-3.4.1.min.js\" integrity=\"sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=\" crossorigin=\"anonymous\"></script><script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.js\"></script><script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js\"></script><script>var time=[],lux=[],uv=[],t2=[],h=[];$.ajax({method:\"GET\",url:\"/json\",processData:!1,dataType:\"json\",contentType:\"application/json\",success:function(t){function e(t,e){time.push({x:new Date(1e3*t.utc),y:t.t1}),lux.push({x:new Date(1e3*t.utc),y:t.l}),uv.push({x:new Date(1e3*t.utc),y:t.uv}),t2.push({x:new Date(1e3*t.utc),y:t.t2}),h.push({x:new Date(1e3*t.utc),y:t.h})}t.forEach(e),new Chartist.Line(\".t-chart\",{series:[{name:\"Time\",data:time}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".l-chart\",{series:[{name:\"Lux\",data:lux}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".uv-chart\",{series:[{name:\"UV\",data:uv}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".t2-chart\",{series:[{name:\"Temp 2\",data:t2}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".h-chart\",{series:[{name:\"Humidity\",data:h}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}})}});</script></body></html>";
   server.send(200, "text/html", home);
   digitalWrite(led, 0);
 }
@@ -142,8 +143,7 @@ SPIFFS.begin();
   delay(1);
   m24.close();
   Wire.begin();
-  light.begin(); // enable lux sensor
-
+  dht.setup(2, DHTesp::DHT11); // Connect DHT sensor to GPIO 17
   timeClient.begin();
   digitalWrite(LED_BUILTIN, HIGH);
 } // end setup 
@@ -202,23 +202,34 @@ float uvIntensity = mapfloat(uviVoltage, 0.96, 2.8, 0.0, 15.0); //Convert the vo
   steinhart -= 273.15;                         // convert to C
 // UUID
 //Serial.println(WiFi.localIP());
-// DHT 11 on and read
+
+  float Hw = dht.getHumidity();
+  float T2w = dht.getTemperature();
+
 
 T1w = steinhart;
  Serial.print("Temp 1 (C):    ");
  Serial.println(T1w);
 
+
+ Serial.print("Temp 2 (C):    ");
+ Serial.println(T2w);
+
+
+ Serial.print("Humidity:    ");
+ Serial.println(Hw);
+
 UVw = uvIntensity;
  Serial.print("UV Index:    ");
  Serial.println(UVw);
-Lw = light.get_lux();
+Lw = myLux.getLux();
  Serial.print("Light (lux):    ");
  Serial.println(Lw);
 //------------------------------------------------------------------
 
   File m24 = SPIFFS.open("/h24", "a+");
 
-  String json = "{\"t1\":" + T1w + " , \"utc\":" + t + " , \"uv\":" + UVw + ", \"l\":" + Lw + "},";
+  String json = "{\"t1\":" + T1w + " , \"t2\":" + T2w + " , \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "},";  
 
   m24.print(json);
   delay(10);
