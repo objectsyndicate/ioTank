@@ -83,8 +83,96 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 
 void handleRoot() {
   digitalWrite(led, 1);
-  String home = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><title>ioTank</title><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.css\"><style>#chart1{height:300px;width:100%;stroke:#000;background-color:#FFD5D5}#chart1 .ct-point{stroke:#b22222}#chart1 .ct-line{stroke:#b22222}#chart2{height:300px;width:100%;stroke:#000;background-color:#DEF}#chart2 .ct-point{stroke:#00008b}#chart2 .ct-line{stroke:#00008b}#chart3{height:300px;width:100%;stroke:#000;background-color:#E0DDFF}#chart3 .ct-point{stroke:Indigo}#chart3 .ct-line{stroke:Indigo}#chart4{height:300px;width:100%;stroke:#000;background-color:#DFD}#chart4 .ct-point{stroke:#006400}#chart4 .ct-line{stroke:#006400}#chart5{height:300px;width:100%;stroke:#000;background-color:#FFF4E0}#chart5 .ct-point{stroke:#d2691e}#chart5 .ct-line{stroke:#d2691e}</style></head><body><h2>Temp Probe</h2><div class=\"t-chart\" id=\"chart1\"></div><h2>Lux</h2><div class=\"l-chart\" id=\"chart2\"></div><h2>UV</h2><div class=\"uv-chart\" id=\"chart3\"></div><h2>Temp Sensor</h2><div class=\"t2-chart\" id=\"chart4\"></div><h2>Humidity</h2><div class=\"h-chart\" id=\"chart5\"></div><script src=\"https://code.jquery.com/jquery-3.4.1.min.js\" integrity=\"sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=\" crossorigin=\"anonymous\"></script><script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.4/chartist.min.js\"></script><script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js\"></script><script>var time=[],lux=[],uv=[],t2=[],h=[];$.ajax({method:\"GET\",url:\"/json\",processData:!1,dataType:\"json\",contentType:\"application/json\",success:function(t){function e(t,e){time.push({x:new Date(1e3*t.utc),y:t.t1}),lux.push({x:new Date(1e3*t.utc),y:t.l}),uv.push({x:new Date(1e3*t.utc),y:t.uv}),t2.push({x:new Date(1e3*t.utc),y:t.t2}),h.push({x:new Date(1e3*t.utc),y:t.h})}t.forEach(e),new Chartist.Line(\".t-chart\",{series:[{name:\"Time\",data:time}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".l-chart\",{series:[{name:\"Lux\",data:lux}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".uv-chart\",{series:[{name:\"UV\",data:uv}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".t2-chart\",{series:[{name:\"Temp 2\",data:t2}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}}),new Chartist.Line(\".h-chart\",{series:[{name:\"Humidity\",data:h}]},{axisX:{type:Chartist.FixedScaleAxis,divisor:5,labelInterpolationFnc:function(t){return moment(t).format(\"MMM D\")}}})}});</script></body></html>";
-  server.send(200, "text/html", home);
+
+String htmlData = R"raw(
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Data Visualization</title>
+    <style>
+        canvas { border: 1px solid black; margin-top: 20px; }
+        #container div { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+<div id='container'>
+    <div>
+        <label>t1:</label> <span id='t1Key'></span>
+        <canvas id='t1Canvas' width='800' height='200'></canvas>
+    </div>
+    <div>
+        <label>t2:</label> <span id='t2Key'></span>
+        <canvas id='t2Canvas' width='800' height='200'></canvas>
+    </div>
+    <div>
+        <label>h:</label> <span id='hKey'></span>
+        <canvas id='hCanvas' width='800' height='200'></canvas>
+    </div>
+    <div>
+        <label>uv:</label> <span id='uvKey'></span>
+        <canvas id='uvCanvas' width='800' height='200'></canvas>
+    </div>
+    <div>
+        <label>l:</label> <span id='lKey'></span>
+        <canvas id='lCanvas' width='800' height='200'></canvas>
+    </div>
+</div>
+<script>
+    fetch('/json')
+    .then(response => response.json())
+    .then(data => {
+        const canvasWidth = 800;
+        const canvasHeight = 200;
+        let minTime = Math.min(...data.map(item => item.utc));
+        let maxTime = Math.max(...data.map(item => item.utc));
+        let xScale = canvasWidth / (maxTime - minTime);
+        
+        const drawGrid = (ctx, maxVal, minVal, yScale) => {
+            ctx.strokeStyle = '#e0e0e0';
+            let step = (maxVal - minVal) / 5; // Divide graph into 5 sections
+            for (let i = 1; i < 5; i++) {
+                let y = canvasHeight - step * i * yScale;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvasWidth, y);
+                ctx.stroke();
+                ctx.font = '12px Arial';
+                ctx.fillStyle = 'gray';
+                ctx.fillText((step * i + minVal).toFixed(2), 0, y - 2);
+            }
+        }
+
+        ['t1', 't2', 'h', 'uv', 'l'].forEach(metric => {
+            let maxVal = Math.max(...data.map(item => item[metric] || 0));
+            let minVal = Math.min(...data.map(item => item[metric] || 0));
+            let yScale = canvasHeight / (maxVal - minVal);
+            document.getElementById(metric + 'Key').textContent = 'Min: ' + minVal + ', Max: ' + maxVal;
+            let canvas = document.getElementById(metric + 'Canvas');
+            let ctx = canvas.getContext('2d');
+            
+            drawGrid(ctx, maxVal, minVal, yScale);  // Draw grid
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            data.forEach((point, index) => {
+                let x = (point.utc - minTime) * xScale;
+                let y = canvasHeight - (point[metric] || minVal) * yScale;
+                if(index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        });
+    })
+    .catch(err => console.error(err));
+</script>
+</body>
+</html>
+)raw";
+
+
+  server.send(200, "text/html", htmlData);
   digitalWrite(led, 0);
 }
 
@@ -127,14 +215,14 @@ void setup(void) {
   if (MDNS.begin("esp8266")) {
     Serial.println("MDNS responder started");
   }
-
+  delay(100);
   server.on("/", handleRoot);
-
   server.on("/json", []() {
     server.send(200, "application/json", "["+line+"]");
   });
   server.onNotFound(handleNotFound);
   server.begin();
+  
   Serial.println("HTTP server started");
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
 SPIFFS.begin();
@@ -143,7 +231,7 @@ SPIFFS.begin();
   delay(1);
   m24.close();
   Wire.begin();
-  dht.setup(2, DHTesp::DHT11); // Connect DHT sensor to GPIO 17
+  dht.setup(D4, DHTesp::DHT11); // Connect DHT sensor to GPIO 17
   timeClient.begin();
   digitalWrite(LED_BUILTIN, HIGH);
 } // end setup 
@@ -202,10 +290,17 @@ float uvIntensity = mapfloat(uviVoltage, 0.96, 2.8, 0.0, 15.0); //Convert the vo
   steinhart -= 273.15;                         // convert to C
 // UUID
 //Serial.println(WiFi.localIP());
+  delay(dht.getMinimumSamplingPeriod());
 
   float Hw = dht.getHumidity();
   float T2w = dht.getTemperature();
+if (isnan(Hw)) {
+  Hw = 0.0;
+}
 
+if (isnan(T2w)) {
+  T2w = 0.0;
+} 
 
 T1w = steinhart;
  Serial.print("Temp 1 (C):    ");
@@ -241,7 +336,7 @@ Lw = myLux.getLux();
   line = m.readString();
   Serial.println(count);
   
-  if (count>1440){ // if history goes over 1mb, nuke it
+  if (count>100){ // if history goes over 1mb, nuke it
     
   File m24 = SPIFFS.open("/h24", "w+");
   count=0;
