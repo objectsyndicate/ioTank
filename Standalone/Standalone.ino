@@ -63,8 +63,8 @@ String FC = "";
 String S = "";
 // WIFI --------------------------------------------
 #ifndef STASSID
-#define STASSID "meatwad"
-#define STAPSK  "f00manchu"
+#define STASSID "..."
+#define STAPSK  "..."
 #endif
 
 const char* ssid = STASSID;
