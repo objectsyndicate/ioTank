@@ -84,7 +84,8 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 void handleRoot() {
   digitalWrite(led, 1);
 
-String htmlData = R"raw(
+
+  String htmlData = R"raw(
 <!DOCTYPE html>
 <html lang='en'>
 <head>
@@ -92,7 +93,8 @@ String htmlData = R"raw(
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>Data Visualization</title>
     <style>
-        canvas { border: 1px solid black; margin-top: 20px; }
+        body { font-family: Arial, sans-serif; }
+        canvas { border: 1px solid black; margin-top: 20px; width: 100%; }
         #container div { margin-bottom: 15px; }
     </style>
 </head>
@@ -100,39 +102,52 @@ String htmlData = R"raw(
 <div id='container'>
     <div>
         <label>t1:</label> <span id='t1Key'></span>
-        <canvas id='t1Canvas' width='800' height='220'></canvas>
+        <canvas id='t1Canvas' width='1600' height='440'></canvas>
     </div>
     <div>
         <label>t2:</label> <span id='t2Key'></span>
-        <canvas id='t2Canvas' width='800' height='220'></canvas>
+        <canvas id='t2Canvas' width='1600' height='440'></canvas>
     </div>
     <div>
         <label>h:</label> <span id='hKey'></span>
-        <canvas id='hCanvas' width='800' height='220'></canvas>
+        <canvas id='hCanvas' width='1600' height='440'></canvas>
     </div>
     <div>
         <label>uv:</label> <span id='uvKey'></span>
-        <canvas id='uvCanvas' width='800' height='220'></canvas>
+        <canvas id='uvCanvas' width='1600' height='440'></canvas>
     </div>
     <div>
         <label>l:</label> <span id='lKey'></span>
-        <canvas id='lCanvas' width='800' height='220'></canvas>
+        <canvas id='lCanvas' width='1600' height='440'></canvas>
     </div>
 </div>
 <script>
     fetch('/json')
     .then(response => response.json())
     .then(data => {
-        const canvasWidth = 800;
-        const canvasHeight = 220;
+        const canvasWidth = document.body.clientWidth;
+        const canvasHeight = 440;
         const padding = 20;
         let minTime = Math.min(...data.map(item => item.utc));
         let maxTime = Math.max(...data.map(item => item.utc));
+
+        const timePadding = 0.05 * (maxTime - minTime); // 5% padding
+        minTime -= timePadding;
+        maxTime += timePadding;
+
         let xScale = canvasWidth / (maxTime - minTime);
 
         const adjustForConstantValues = (min, max) => {
             const offset = 0.1 * (max - min || 1);
             return [min - offset, max + offset];
+        };
+
+        const colors = {
+            t1: 'red',
+            t2: 'orange',
+            h: 'blue',
+            uv: 'purple',
+            l: 'gray'
         };
 
         ['t1', 't2', 'h', 'uv', 'l'].forEach(metric => {
@@ -146,31 +161,27 @@ String htmlData = R"raw(
             let canvas = document.getElementById(metric + 'Canvas');
             let ctx = canvas.getContext('2d');
             
-            ctx.strokeStyle = '#e0e0e0';
-            for (let i = 0; i <= 10; i++) {
-                let y = padding + i * (canvasHeight - 2 * padding) / 10;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvasWidth, y);
-                ctx.stroke();
-            }
-
-            ctx.beginPath();
-            ctx.strokeStyle = 'black';
+            ctx.strokeStyle = colors[metric];
             data.forEach((point, index) => {
                 let x = (point.utc - minTime) * xScale;
                 let y = canvasHeight - (point[metric] - minVal) * yScale - padding;
-                if(index === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
 
-                ctx.fillStyle = 'red';
+                ctx.fillStyle = colors[metric];
                 ctx.fillRect(x-2, y-2, 4, 4);
-                
+
+                // Display bold text value for each point
+                ctx.font = 'bold 12px Arial';
+                ctx.fillStyle = 'black';
+                ctx.fillText(point[metric].toFixed(2), x + 5, y - 5);
+
                 if (index % 5 == 0 || index == data.length - 1) {
                     ctx.font = '10px Arial';
                     ctx.fillStyle = 'blue';
                     ctx.fillText(new Date(point.utc * 1000).toISOString().substr(11, 5), x - 10, canvasHeight - 5);
                 }
+
+                if(index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             });
             ctx.stroke();
         });
@@ -180,6 +191,7 @@ String htmlData = R"raw(
 </body>
 </html>
 )raw";
+
 
 
 
