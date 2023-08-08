@@ -26,16 +26,8 @@ String Hw;
 String UVw;
 String Lw;
 
-
-
-
 // Check the SPIFFS file and clear it if it's over a certain size
 void checkAndShortenFile(const char* filePath) {
-    // Check if the file exists
-    if (!SPIFFS.exists(filePath)) {
-        Serial.println("File does not exist!");
-        return;
-    }
 
     File file = SPIFFS.open(filePath, "r");
 
@@ -113,8 +105,8 @@ String FC = "";
 String S = "";
 // WIFI --------------------------------------------
 #ifndef STASSID
-#define STASSID "---"
-#define STAPSK  "---"
+#define STASSID "..."
+#define STAPSK  "..."
 #endif
 
 const char* ssid = STASSID;
@@ -173,7 +165,8 @@ String htmlData = R"raw(
 </div>
 <script>
     fetch('/json')
-    .then(response => response.json())
+.then(response => response.text())
+.then(text => JSON.parse('[' + text.slice(0, -1) + ']'))
     .then(data => {
         const canvasWidth = document.body.clientWidth;
         const canvasHeight = 440;
@@ -234,10 +227,6 @@ String htmlData = R"raw(
 )raw";
 
 
-
-
-
-
   server.send(200, "text/html", htmlData);
   digitalWrite(led, 0);
 }
@@ -284,28 +273,9 @@ void setup(void) {
   delay(100);
   server.on("/", handleRoot);
 
-
-
 server.on("/json", []() {
   File file = SPIFFS.open("/h24", "r+"); // Open the file for read/update
-
-  if (!file) {
-    server.send(500, "text/plain", "Failed to open the file.");
-    return;
-  }
-
-  // Check and replace the last comma with ]
-  file.seek(file.size() - 1); // Move to the last character
-  char finalChar = file.read();
-  if (finalChar == ',') {
-    file.seek(file.size() - 1);
-    file.print("]");
-  }
-
-  // Reset the file position to start to ensure the full content is streamed
-  file.seek(0);
-  
-  server.streamFile(file, "application/json");
+  server.streamFile(file, "text/plain");
   file.close();
 });
 
@@ -340,7 +310,7 @@ unsigned long currentMillis = millis(); // NOW
   timeClient.update();
 
   String t = String(timeClient.getEpochTime());
-  Serial.println(t);
+  //Serial.println(t);
 
 //----------READ----------------------------------------------------
 
@@ -393,55 +363,33 @@ if (isnan(T2w)) {
 } 
 
 T1w = steinhart;
- Serial.print("Temp 1 (C):    ");
- Serial.println(T1w);
+// Serial.print("Temp 1 (C):    ");
+// Serial.println(T1w);
 
 
- Serial.print("Temp 2 (C):    ");
- Serial.println(T2w);
+// Serial.print("Temp 2 (C):    ");
+// Serial.println(T2w);
 
 
- Serial.print("Humidity:    ");
- Serial.println(Hw);
+// Serial.print("Humidity:    ");
+// Serial.println(Hw);
 
 UVw = uvIntensity;
- Serial.print("UV Index:    ");
- Serial.println(UVw);
+// Serial.print("UV Index:    ");
+// Serial.println(UVw);
 Lw = myLux.getLux();
- Serial.print("Light (lux):    ");
- Serial.println(Lw);
+//Serial.print("Light (lux):    ");
+// Serial.println(Lw);
 //------------------------------------------------------------------
 
-File m24 = SPIFFS.open("/h24", "r+");  // Open for reading and updating
-Serial.printf("File size: %.2f MB\n", (float)m24.size() / (1024 * 1024));
+  File m24 = SPIFFS.open("/h24", "a+"); 
+  //Serial.printf("File size: %.2f MB\n", (float)m24.size() / (1024 * 1024));
 
-if (!m24) {
-    Serial.println("Failed to open file for appending");
-    return;
-}
-if (m24.size() == 0) {  // If the file is empty
-    m24.print("[");
-}
-m24.seek(m24.size() - 1);  // Move to the last character
-char lastChar = m24.read();
-if (lastChar == ']') {
-    m24.seek(m24.size() - 1);  // Move one character back to overwrite ]
-    m24.print(",");
-}
+  String json = "{\"t1\":" + T1w + ", \"t2\":" + T2w + ", \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "},";
+  m24.print(json);
 
-String json = "{\"t1\":" + T1w + ", \"t2\":" + T2w + ", \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "}";
+  m24.close();
 
-// Add the new JSON data
-m24.print(json);  // where newData is your new JSON string
-
-// Always ensure the data ends with a ]
-m24.print("]");
-
-m24.close();
-
-delay(50);
-checkAndShortenFile("/h24");
-delay(50);
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   } //  end time
   
