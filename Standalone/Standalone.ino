@@ -26,44 +26,91 @@ String Hw;
 String UVw;
 String Lw;
 
-// Check the SPIFFS file and clear it if it's over a certain size
 void checkAndShortenFile(const char* filePath) {
-
     File file = SPIFFS.open(filePath, "r");
+    if (!file) {
+        Serial.println("Failed to open the file for reading");
+        return;
+    }
 
-    // Check if the file size is over 1.9MB
-    if (file.size() > 1900000) {
-        String content;
-        // Load the file content
-        while (file.available()) {
-            content += (char)file.read();
-        }
+    // If the file size is not over 50KB, nothing to do
+    if (file.size() <= 100000) {
         file.close();
+        return;
+    }
 
-        DynamicJsonDocument doc(2048);
-        DeserializationError err = deserializeJson(doc, content);
+    size_t totalObjects = 0;
+    size_t nestedLevel = 0;
+    char ch;
 
-        if (err) {
-            Serial.println("Failed to parse the JSON!");
-            return;
+    // Count the number of objects
+    while (file.available()) {
+        ch = (char)file.read();
+        if (ch == '{') nestedLevel++;
+        if (ch == '}') nestedLevel--;
+
+        if (nestedLevel == 0 && ch == '}') {
+            totalObjects++;
         }
+    }
 
-        JsonArray array = doc.as<JsonArray>();
-        int removeCount = array.size() / 2;
+    // Go back to the start of the file
+    file.seek(0);
 
-        for (int i = 0; i < removeCount; i++) {
-            array.remove(array.size() - 1);  // Remove the last element
+    size_t targetObjects = totalObjects / 2;
+    size_t currentObjects = 0;
+    nestedLevel = 0;
+
+    // Traverse until halfway point (in terms of objects)
+    while (file.available() && currentObjects < targetObjects) {
+        ch = (char)file.read();
+
+        if (ch == '{') nestedLevel++;
+        if (ch == '}') nestedLevel--;
+
+        if (nestedLevel == 0 && ch == '}') {
+            currentObjects++;
         }
+    }
 
-        // Clear the file and write back the shortened content
-        File fileToWrite = SPIFFS.open(filePath, "w");
-        serializeJson(doc, fileToWrite);
-        fileToWrite.close();
-    } else {
+    // Ensure that we're positioned at the start of a new object
+    while (file.available() && ((ch = (char)file.read()) != '{'));
+
+    if (!file.available()) {
+        Serial.println("Error: Unexpected end of file.");
         file.close();
+        return;
+    }
+
+    // Create a temporary file to write the second half of the data
+    File tempFile = SPIFFS.open("/temp.txt", "w");
+    if (!tempFile) {
+        Serial.println("Failed to open temp file for writing");
+        file.close();
+        return;
+    }
+
+    // Write the data to the temp file
+    tempFile.write(ch);
+    while (file.available()) {
+        ch = (char)file.read();
+        tempFile.write(ch);
+    }
+
+    file.close();
+    tempFile.close();
+
+    // Remove the original file
+    if (!SPIFFS.remove(filePath)) {
+        Serial.println("Error: Failed to remove the original file.");
+        return;
+    }
+
+    // Rename the temporary file to the original file's name
+    if (!SPIFFS.rename("/temp.txt", filePath)) {
+        Serial.println("Error: Failed to rename the temp file.");
     }
 }
-
 
 
 int averageAnalogRead(int pinToRead)
@@ -105,8 +152,8 @@ String FC = "";
 String S = "";
 // WIFI --------------------------------------------
 #ifndef STASSID
-#define STASSID "..."
-#define STAPSK  "..."
+#define STASSID "---"
+#define STAPSK  "---"
 #endif
 
 const char* ssid = STASSID;
@@ -384,11 +431,11 @@ Lw = myLux.getLux();
 
   File m24 = SPIFFS.open("/h24", "a+"); 
   //Serial.printf("File size: %.2f MB\n", (float)m24.size() / (1024 * 1024));
-
   String json = "{\"t1\":" + T1w + ", \"t2\":" + T2w + ", \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "},";
   m24.print(json);
-
   m24.close();
+
+checkAndShortenFile("/h24");
 
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   } //  end time
