@@ -84,6 +84,7 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 void handleRoot() {
   digitalWrite(led, 1);
 
+
 String htmlData = R"raw(
 <!DOCTYPE html>
 <html lang='en'>
@@ -128,8 +129,9 @@ String htmlData = R"raw(
         const canvasHeight = 440;
         const padding = 20;
 
-        const xSlotWidth = canvasWidth / (data.length + 1); // The width of each slot
-        
+        // Adjusting the width for plotting by subtracting a few pixels
+        const xSlotWidth = canvasWidth / (data.length - 1);
+
         const adjustForConstantValues = (min, max) => {
             const offset = 0.1 * (max - min || 1);
             return [min - offset, max + offset];
@@ -156,7 +158,7 @@ String htmlData = R"raw(
             
             ctx.strokeStyle = colors[metric];
             data.forEach((point, index) => {
-                let x = xSlotWidth * (index + 1); // Start from the first slot
+                let x = xSlotWidth * index;
                 let y = canvasHeight - (point[metric] - minVal) * yScale - padding;
 
                 ctx.fillStyle = colors[metric];
@@ -180,6 +182,11 @@ String htmlData = R"raw(
     });
 </script>
 )raw";
+
+
+
+
+
 
   server.send(200, "text/html", htmlData);
   digitalWrite(led, 0);
@@ -226,9 +233,32 @@ void setup(void) {
   }
   delay(100);
   server.on("/", handleRoot);
-  server.on("/json", []() {
-    server.send(200, "application/json", "["+line+"]");
-  });
+
+
+
+server.on("/json", []() {
+  File file = SPIFFS.open("/h24", "r+"); // Open the file for read/update
+
+  if (!file) {
+    server.send(500, "text/plain", "Failed to open the file.");
+    return;
+  }
+
+  // Check and replace the last comma with ]
+  file.seek(file.size() - 1); // Move to the last character
+  char finalChar = file.read();
+  if (finalChar == ',') {
+    file.seek(file.size() - 1);
+    file.print("]");
+  }
+
+  // Reset the file position to start to ensure the full content is streamed
+  file.seek(0);
+  
+  server.streamFile(file, "application/json");
+  file.close();
+});
+
   server.onNotFound(handleNotFound);
   server.begin();
   
@@ -246,7 +276,7 @@ SPIFFS.begin();
 } // end setup 
 
 long postPreviousMillis = 0;        // will store last time LED was updated
-long readInterval = 10000;           // interval at which to read sensors 1 seconds
+long readInterval = 1000;           // interval at which to read sensors 1 seconds
 int count = 0; // how many times has it ran, if its 96 rotate log
 
 void loop(void) {
@@ -299,10 +329,11 @@ float uvIntensity = mapfloat(uviVoltage, 0.96, 2.8, 0.0, 15.0); //Convert the vo
   steinhart -= 273.15;                         // convert to C
 // UUID
 //Serial.println(WiFi.localIP());
-  delay(dht.getMinimumSamplingPeriod());
 
   float Hw = dht.getHumidity();
   float T2w = dht.getTemperature();
+   delay(dht.getMinimumSamplingPeriod());
+   
 if (isnan(Hw)) {
   Hw = 0.0;
 }
@@ -330,35 +361,31 @@ Lw = myLux.getLux();
  Serial.print("Light (lux):    ");
  Serial.println(Lw);
 //------------------------------------------------------------------
-
-  File m24 = SPIFFS.open("/h24", "a+");
-
-  String json = "{\"t1\":" + T1w + " , \"t2\":" + T2w + " , \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "},";  
-
-  m24.print(json);
-  delay(10);
-  m24.close();
-  count += 1;
-
-  File m = SPIFFS.open("/h24", "r");
-  
-  line = m.readString();
-  Serial.println(count);
-  
-  if (count>100){ // if history goes over 1mb, nuke it
     
-  File m24 = SPIFFS.open("/h24", "w+");
-  count=0;
-  delay(1);
-  
+File m24 = SPIFFS.open("/h24", "r+"); // Open in read/update mode
+
+if (m24.size() == 0) {  // If the file is empty
+    m24.print("[");
+} else { 
+    m24.seek(m24.size() - 1);  // Move to the last character to check if it's a comma
+    char last = m24.read();
+    
+    if (last == ']') {
+        m24.seek(m24.size() - 1);  // Move back to overwrite the last character
     }
-    
-  m.close();
+}
 
-  unsigned int len = line.length();
-  line.remove(len-1, 1) ; //remove the last comma
-  
-    digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+// Append the new data without prematurely adding the closing bracket
+String json = "{\"t1\":" + T1w + ", \"t2\":" + T2w + ", \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "},";
+m24.print(json);
+m24.close();
+
+count += 1;
+Serial.println(count);
+
+
+
+  digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   } //  end time
   
   server.handleClient();
