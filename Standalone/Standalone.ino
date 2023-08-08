@@ -254,11 +254,12 @@ String htmlData = R"raw(
                 ctx.fillStyle = colors[metric];
                 ctx.fillRect(x-2, y-2, 4, 4);
 
-                ctx.font = 'bold 12px Arial';
-                ctx.fillStyle = 'black';
-                ctx.fillText(point[metric].toFixed(2), x + 5, y - 5);
-
                 if (index % 5 == 0 || index == data.length - 1) {
+
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(point[metric].toFixed(2), x + 5, y - 5);
+                  
                     ctx.font = '10px Arial';
                     ctx.fillStyle = 'blue';
                     ctx.fillText(new Date(point.utc * 1000).toISOString().substr(11, 5), x - 10, canvasHeight - 5);
