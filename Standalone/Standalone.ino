@@ -413,6 +413,8 @@ Lw = myLux.getLux();
 //------------------------------------------------------------------
 
 File m24 = SPIFFS.open("/h24", "r+");  // Open for reading and updating
+Serial.printf("File size: %.2f MB\n", (float)m24.size() / (1024 * 1024));
+
 if (!m24) {
     Serial.println("Failed to open file for appending");
     return;
@@ -437,8 +439,9 @@ m24.print("]");
 
 m24.close();
 
+delay(50);
 checkAndShortenFile("/h24");
-
+delay(50);
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   } //  end time
   
