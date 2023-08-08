@@ -5,24 +5,74 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <FS.h> // SPIFS
-// Stuff--------------------------------------
 #include "DHTesp.h"
 #include <Wire.h> //SPI
 #include "Max44009.h" // Lux
 #include <MCP3008.h>
-Max44009 myLux(0x4A);
+#include <ArduinoJson.h>
+
+
 #define CS_PIN D8
 #define CLOCK_PIN D5
 #define MOSI_PIN D7
 #define MISO_PIN D6
 MCP3008 adc(CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
 DHTesp dht;
+Max44009 myLux(0x4A);
 
 String T1w;
 String T2w;
 String Hw;
 String UVw;
 String Lw;
+
+
+
+
+// Check the SPIFFS file and clear it if it's over a certain size
+void checkAndShortenFile(const char* filePath) {
+    // Check if the file exists
+    if (!SPIFFS.exists(filePath)) {
+        Serial.println("File does not exist!");
+        return;
+    }
+
+    File file = SPIFFS.open(filePath, "r");
+
+    // Check if the file size is over 1.9MB
+    if (file.size() > 1900000) {
+        String content;
+        // Load the file content
+        while (file.available()) {
+            content += (char)file.read();
+        }
+        file.close();
+
+        DynamicJsonDocument doc(2048);
+        DeserializationError err = deserializeJson(doc, content);
+
+        if (err) {
+            Serial.println("Failed to parse the JSON!");
+            return;
+        }
+
+        JsonArray array = doc.as<JsonArray>();
+        int removeCount = array.size() / 2;
+
+        for (int i = 0; i < removeCount; i++) {
+            array.remove(array.size() - 1);  // Remove the last element
+        }
+
+        // Clear the file and write back the shortened content
+        File fileToWrite = SPIFFS.open(filePath, "w");
+        serializeJson(doc, fileToWrite);
+        fileToWrite.close();
+    } else {
+        file.close();
+    }
+}
+
+
 
 int averageAnalogRead(int pinToRead)
 {
@@ -63,8 +113,8 @@ String FC = "";
 String S = "";
 // WIFI --------------------------------------------
 #ifndef STASSID
-#define STASSID "..."
-#define STAPSK  "..."
+#define STASSID "---"
+#define STAPSK  "---"
 #endif
 
 const char* ssid = STASSID;
@@ -362,9 +412,6 @@ Lw = myLux.getLux();
  Serial.println(Lw);
 //------------------------------------------------------------------
 
-
-
-
 File m24 = SPIFFS.open("/h24", "r+");  // Open for reading and updating
 if (!m24) {
     Serial.println("Failed to open file for appending");
@@ -390,6 +437,7 @@ m24.print("]");
 
 m24.close();
 
+checkAndShortenFile("/h24");
 
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   } //  end time
