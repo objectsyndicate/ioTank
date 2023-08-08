@@ -361,28 +361,34 @@ Lw = myLux.getLux();
  Serial.print("Light (lux):    ");
  Serial.println(Lw);
 //------------------------------------------------------------------
-    
-File m24 = SPIFFS.open("/h24", "r+"); // Open in read/update mode
 
+
+
+
+File m24 = SPIFFS.open("/h24", "r+");  // Open for reading and updating
+if (!m24) {
+    Serial.println("Failed to open file for appending");
+    return;
+}
 if (m24.size() == 0) {  // If the file is empty
     m24.print("[");
-} else { 
-    m24.seek(m24.size() - 1);  // Move to the last character to check if it's a comma
-    char last = m24.read();
-    
-    if (last == ']') {
-        m24.seek(m24.size() - 1);  // Move back to overwrite the last character
-    }
+}
+m24.seek(m24.size() - 1);  // Move to the last character
+char lastChar = m24.read();
+if (lastChar == ']') {
+    m24.seek(m24.size() - 1);  // Move one character back to overwrite ]
+    m24.print(",");
 }
 
-// Append the new data without prematurely adding the closing bracket
-String json = "{\"t1\":" + T1w + ", \"t2\":" + T2w + ", \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "},";
-m24.print(json);
+String json = "{\"t1\":" + T1w + ", \"t2\":" + T2w + ", \"h\":" + Hw + ", \"uv\":" + UVw + ", \"l\":" + Lw + ", \"utc\":" + t + "}";
+
+// Add the new JSON data
+m24.print(json);  // where newData is your new JSON string
+
+// Always ensure the data ends with a ]
+m24.print("]");
+
 m24.close();
-
-count += 1;
-Serial.println(count);
-
 
 
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
